@@ -52,7 +52,7 @@ define([
                 this.yView = this.boundsCheck(-this.followed.y + this.canvasHeight, -this.worldHeight, this.worldHeight - this.canvasHeight);
             }
             
-             console.log("xView: " + this.xView);
+             //console.log("xView: " + this.xView);
              //console.log("yView: " + this.yView);
 
         }

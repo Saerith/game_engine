@@ -111,6 +111,8 @@ define([
                 this.drawPart(ctx, this.tick, lasty)
                 lasty -= 2 // this causes health to grow upward 
             }
+            console.log(this.dest_coords);
+
         }
 
         drawPart(ctx, part, lasty) {
@@ -122,7 +124,11 @@ define([
             ) 
         }
 
-        update() {}
+        update() {
+            this.dest_coords[0] = this.hero.x;
+            this.dest_coords[1] = this.hero.y;
+
+        }
         isColliding() {}
         collided() {}
 

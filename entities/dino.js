@@ -28,7 +28,7 @@ define([
                 this.boundWidth = 90*this.scale;
                 this.boundHeight = 60*this.scale;
                 this.boundX = this.centerX - (this.boundWidth / 2);
-                this.boundY = this.y + (this.spriteHeight * this.scale - this.boundHeight);
+                this.boundY = this.y - this.boundHeight; //DS3DRAWCHANGE2
 
                 this.health = 200;
 

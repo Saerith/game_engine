@@ -1,0 +1,18 @@
+DC1: this is where the issue occurs (note that Soldier and Dino's anims and hitboxes are perectly aligned,
+as is Hero's when falling. It's the collision that needs to be updated.)
+
+Original line was... this.y = this.boundY - (this.scale*this.spriteHeight - this.boundHeight);
+
+Leaving it as above causes Hero to be drawn too high in relation to the hitbox.
+I feel like the removal of the second term *should* perfectly realign, but obviously
+there's something I'm not accounting for.
+So far, my attempts to change the assignment for this.boundY (directly above the line I changed)
+have caused issues. (I doubt we need to change it, because the hitbox is still colliding perfectly with the terrain.
+this.y is what needs to be fixed).
+
+DC2: this is the change that was made to Hero/Dino/Soldier/Hero projectiles, and will eventually be
+the expression for the other non-terrain entities. It 
+
+DC3: : subtracting by this value makes all frames align according to the base of the frame and not the top.
+In other words, no matter a frame's height, the animation will align with other animations. (see soldier as
+an example. Dino has a slight frame adjustment in spritesheet to make the shooting anims line up.)

@@ -28,7 +28,7 @@ define([
                 this.boundWidth = 0;
                 this.boundHeight = 0;
                 this.boundX = this.centerX - (this.boundWidth / 2);
-                this.boundY = this.y + (this.spriteHeight * this.scale - this.boundHeight);
+                this.boundY = this.y - this.boundHeight;
 
 
                 this.states = {
@@ -129,7 +129,6 @@ define([
                         this.states.turning = false;
                         this.states.facingRight = !this.states.facingRight;
                         //for demo
-                        console.log(this.states.facingRight);
                         this.states.idling = true;
                     }
                 }

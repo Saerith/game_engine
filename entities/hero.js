@@ -37,8 +37,9 @@ define([
             this.centerX = x + ((spriteWidth*scale)/2);
             this.boundWidth = 60;
             this.boundHeight = 110;
-            this.boundX = this.centerX - (this.boundWidth/2);
-            this.boundY = this.y + (this.spriteHeight*this.scale - this.boundHeight);
+            this.boundX = this.centerX - (this.boundWidth / 2);
+            //DS3 2/16: Frame height is no longer subtracted in order to align hitbox with animation (see animation class draw image func)
+            this.boundY = this.y - this.boundHeight;
             this.lastBoundY = this.boundY; // This will help stop Hero from slipping at edges, particularly for horizontally longer blocks of terrain
 
 
@@ -106,9 +107,6 @@ define([
             if (!this.game.controlKeys[this.game.controls.energize].active) {
                 this.states.energized = false;
             }
-            //if (!this.game.controlKeys[this.game.controls.shoot].active) {
-            //    this.states.shooting = false;
-            //}
 
 
             ///////////// THEN do actions //////////////
@@ -253,7 +251,6 @@ define([
                 this.animation.drawFrame(1, ctx, this.x, this.y, this.states.facingRight);
 
             } else this.animation.drawFrame(1, ctx, this.x, this.y, this.states.facingRight);
-
         }
 
         collided (other, direction) {
@@ -264,7 +261,7 @@ define([
                 // TODO store lastBottom, when landing, check to see if lastBottom is above other.BoundX. if it is, I SHOULD land. else i slide off like a chump. might work? idk yet
                 if (direction === 'bottom') {
                     this.boundY = other.boundY - this.boundHeight;
-                    this.y = this.boundY - (this.spriteHeight*this.scale - this.boundHeight);
+                    this.y = this.boundY + this.boundHeight; //DS3DRAWCHANGE1:
                     this.yVelocity = 0;
                     this.jumpsLeft = this.maxJumps;
                     this.states.jumping = false;
@@ -273,7 +270,7 @@ define([
                 // Hero jumps into terrain
                 else if (direction === 'top') {
                     this.boundY = other.boundY + other.boundHeight;
-                    this.y = this.boundY - (this.spriteHeight*this.scale - this.boundHeight);
+                    this.y = this.boundY + this.boundHeight;
                     this.lastBoundY = this.boundY;
 
                 }

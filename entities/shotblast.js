@@ -21,7 +21,7 @@ define([
                 this.boundWidth = 0;
                 this.boundHeight = 0;
                 this.boundX = this.centerX - (this.boundWidth / 2);
-                this.boundY = this.y + (this.spriteHeight * this.scale - this.boundHeight) - 500;
+                this.boundY = this.y - this.boundHeight - 500;
 
                 this.states = {
                     "active": true,

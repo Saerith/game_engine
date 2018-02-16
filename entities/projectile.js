@@ -27,11 +27,11 @@ define([
                 this.boundHeight = 50;
                 if (facingRight) {
                     this.boundX = this.centerX - (this.boundWidth / 2) + 100;
-                    this.boundY = this.y + (this.spriteHeight * this.scale - this.boundHeight) - 80;
+                    this.boundY = this.y - this.boundHeight; - 80;
                 }
                 else {
                     this.boundX = this.centerX - (this.boundWidth / 2) - 100;
-                    this.boundY = this.y + (this.spriteHeight * this.scale - this.boundHeight) - 80;
+                    this.boundY = this.y - this.boundHeight - 80;
                 }
 
                 this.states = {

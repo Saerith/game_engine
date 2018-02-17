@@ -1,15 +1,17 @@
 define([
-    "actor",
+    "enemy",
     "animation",
     "terrain",
+    "projectile",
 ], function (
-    Actor,
+    Enemy,
     Animation,
     Terrain,
+    Projectile,
     ) {
 
 
-        class Dino extends Actor {
+        class Dino extends Enemy {
 
             constructor(game, x, y, img = null, ctx = null, scale = 3, spriteWidth = 90, spriteHeight = 60) {
                 super(game, x, y, img, ctx);
@@ -22,17 +24,22 @@ define([
                 this.spriteWidth = spriteWidth;
                 this.spriteHeight = spriteHeight;
 
-                this.centerX = x + ((spriteWidth * scale) / 2);
-                this.boundWidth = 0;
-                this.boundHeight = 0;
+                this.centerX = x + ((spriteWidth * scale) / 2) - spriteWidth;
+                this.boundWidth = 60*this.scale;
+                this.boundHeight = 50*this.scale;
                 this.boundX = this.centerX - (this.boundWidth / 2);
-                this.boundY = this.y + (this.spriteHeight * this.scale - this.boundHeight);
+                this.boundY = this.y - this.boundHeight + (this.spriteHeight/2 - 10); //DS3DRAWCHANGE2
 
+                //Stats
+                this.yVelocity = 3;
+                this.health = 200;
+                this.damage = 100;
 
                 this.states = {
                     "idling": true,
                     "shooting": false,
                     "walking": false,
+                    "grounded": false,
                     "facingRight": true,
                 };
                 this.animations = {
@@ -82,6 +89,10 @@ define([
                         this.states.idling = true;
                     }
                 }
+                this.yVelocity += this.gravity * this.gravity;
+                this.y += this.yVelocity;
+                this.lastBoundY = this.boundY;
+                this.boundY += this.yVelocity;
             }
 
             draw(ctx) {
@@ -113,7 +124,53 @@ define([
                     //console.log("shoot up");
                     this.animation = this.animations.shoot_up;
                 }
+                if (this.health <= 0) {
+                    this.removeFromWorld = true;
+                }
                 this.drawImg(ctx);
+            }
+
+            collided(other, direction) {
+
+                if (other instanceof Terrain) {
+
+                    if (direction === 'bottom') {
+                        this.boundY = other.boundY - this.boundHeight;
+                        this.y = this.boundY + this.boundHeight - 20; //fix magic number (drawn slightly below hitbox without the 20 offset)
+                        this.yVelocity = 0;
+                        this.jumpsLeft = this.maxJumps;
+                        this.states.jumping = false;
+                    }
+
+                    else if (direction === 'top') {
+                        this.boundY = other.boundY + other.boundHeight;
+                        this.y = this.boundY + this.boundHeight;
+                        this.lastBoundY = this.boundY;
+
+                    }
+
+                    else if (direction === 'left') {
+                        this.boundX = other.boundX + other.boundWidth;
+                        this.x = this.boundX;
+                    }
+
+                    else if (direction === 'right') {
+                        this.boundX = other.boundX - this.boundWidth;
+                        this.x = this.boundX;
+                    }
+                }
+                else if (other instanceof Projectile) {
+                    this.health -= other.damage;
+                }
+            }
+
+
+            updateHitbox(fWidth, fHeight, bWidth, bHeight) {
+                this.centerX = this.x + ((fWidth * this.scale) / 2) - fWidth;
+                this.boundWidth = this.scale * bWidth;
+                this.boundHeight = this.scale * bHeight;
+                this.boundX = this.centerX - this.boundWidth / 2;
+                this.boundY = this.y - this.boundHeight;
             }
 
             drawOutline(ctx) {
@@ -131,17 +188,6 @@ define([
                 this.animation.drawFrame(1, ctx, this.x, this.y, this.states.facingRight);
             }
 
-            collided(other) {
-                // collide with terrain
-                if (other instanceof Terrain) {
-                    this.y = other.boundY - this.spriteHeight * this.scale;
-                    this.boundY = other.boundY - this.boundHeight;
-                    this.yVelocity = 0;
-                    this.jumpsLeft = this.maxJumps;
-                    this.states.jumping = false;
-                }
-
-            }
         }
 
         return Dino;

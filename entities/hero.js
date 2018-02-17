@@ -5,6 +5,7 @@ define([
     "projectile",
     "projectile-sword",
     "soldier-shield",
+    "enemy",
 ], function (
     Actor,
     Animation,
@@ -12,6 +13,7 @@ define([
     Projectile,
     Projectile_Sword,
     Soldier_Shield,
+    Enemy,
 ){
 
 
@@ -34,13 +36,13 @@ define([
             this.spriteHeight = spriteHeight;
             this.yVelocity = 0;
 
-            this.centerX = x + ((spriteWidth*scale)/2);
+            this.centerX = x + ((spriteWidth * scale) / 2) - spriteWidth;
             this.boundWidth = 60;
             this.boundHeight = 110;
-            this.boundX = this.centerX - (this.boundWidth/2);
-            this.boundY = this.y + (this.spriteHeight*this.scale - this.boundHeight);
+            this.boundX = this.centerX - (this.boundWidth / 2);
+            //DS3 2/16: Frame height is no longer subtracted in order to align hitbox with animation (see animation class draw image func)
+            this.boundY = this.y - this.boundHeight;
             this.lastBoundY = this.boundY; // This will help stop Hero from slipping at edges, particularly for horizontally longer blocks of terrain
-
 
             this.maxHealth = 6;
             this.maxEnergy = 6;
@@ -150,9 +152,6 @@ define([
             if (!this.game.controlKeys[this.game.controls.energize].active) {
                 this.states.energized = false;
             }
-            //if (!this.game.controlKeys[this.game.controls.shoot].active) {
-            //    this.states.shooting = false;
-            //}
 
 
             ///////////// THEN do actions //////////////
@@ -233,52 +232,97 @@ define([
             this.lastBoundY = this.boundY;
             this.boundY += this.yVelocity;
 
+            if (this.health <= 0) {
+                //this.removeFromWorld = true;
+            }
         }
 
         draw(ctx) {
             if (this.yVelocity < 0 && !this.states.shooting) {//ascending
-                this.spriteHeight = 50;
-                this.spriteWidth = 50;
+                this.updateHitbox(50, 50, 20, 35);
                 this.animation = this.animations.ascend;
             }
             else if (this.yVelocity > 0 && !this.states.shooting) {//descending
-                this.spriteHeight = 50;
-                this.spriteWidth = 50;
+                this.updateHitbox(50, 50, 20, 35);
                 this.animation = this.animations.descend;
             }
             else if (this.states.running && this.animation && !this.states.shooting) {//gunrunning
-                this.spriteHeight = 50;
-                this.spriteWidth = 50;
+                this.updateHitbox(50, 50, 20, 35);
                 this.animation = this.animations.gunrun;
             }
             else if (this.states.shooting && this.yVelocity == 0 && this.animation) {//shooting
-                this.spriteHeight = 50;
-                this.spriteWidth = 70;
+
+                this.updateHitbox(70, 50, 20, 35);
                 this.animation = this.animations.shoot;
             }
             else if (this.states.shooting && this.yVelocity != 0 && this.animation) {//air shooting
-                this.spriteHeight = 50;
-                this.spriteWidth = 50;
+                this.updateHitbox(50, 50, 20, 35);
                 this.animation = this.animations.airshoot;
             }
             else if (this.states.cleaving && this.animation) {//cleaving
-                this.spriteHeight = 60;
-                this.spriteWidth = 80;
+                this.updateHitbox(80, 60, 20, 35);
                 this.animation = this.animations.cleave;
             }
             else if (this.states.slashing && this.animation) {//slashing
-                this.spriteHeight = 50;
-                this.spriteWidth = 80;
+                this.updateHitbox(80, 50, 20, 35);
                 this.animation = this.animations.slash;
             }
             else {
-                this.spriteHeight = 50;
-                this.spriteWidth = 50;
+                this.updateHitbox(50, 50, 20, 35);
                 this.animation = this.animations.idle;
             }
             this.drawImg(ctx);
         }
 
+
+        collided(other, direction) {
+            // collide with terrain
+            if (other instanceof Terrain) {
+
+                // Hero above terrain
+                // TODO store lastBottom, when landing, check to see if lastBottom is above other.BoundX. if it is, I SHOULD land. else i slide off like a chump. might work? idk yet
+                if (direction === 'bottom') {
+                    this.boundY = other.boundY - this.boundHeight;
+                    this.y = this.boundY + this.boundHeight; //DS3DRAWCHANGE1:
+                    this.yVelocity = 0;
+                    this.jumpsLeft = this.maxJumps;
+                    this.states.jumping = false;
+                }
+
+                // Hero jumps into terrain
+                else if (direction === 'top') {
+                    this.boundY = other.boundY + other.boundHeight;
+                    this.y = this.boundY + this.boundHeight;
+                    this.lastBoundY = this.boundY;
+
+                }
+
+                // Hero collides with terrain to the left
+                else if (direction === 'left') {
+                    this.boundX = other.boundX + other.boundWidth;
+                    this.x = this.boundX;
+                }
+
+                // Hero collides with terrain to the right
+                else if (direction === 'right') {
+                    this.boundX = other.boundX - this.boundWidth;
+                    this.x = this.boundX;
+                }
+                //console.log(`${this.name} colliding with ${other.name} from ${direction}`);
+            }
+
+            if (other instanceof Enemy) {
+                this.health -= other.damage;
+            }
+        }
+
+        updateHitbox(fWidth, fHeight, bWidth, bHeight) {
+            this.centerX = this.x + ((fWidth * this.scale) / 2) - fWidth;
+            this.boundWidth = this.scale * bWidth;
+            this.boundHeight = this.scale * bHeight;
+            this.boundX = this.centerX - this.boundWidth / 2;
+            this.boundY = this.y - this.boundHeight;
+        }
 
         drawOutline (ctx) {
             ctx.beginPath();
@@ -293,50 +337,7 @@ define([
 
         drawImg (ctx) {
             this.drawOutline(ctx);
-            if(this.yVelocity < 0) {
-                this.animation.drawFrame(1, ctx, this.x, this.y, this.states.facingRight);
-
-            } else this.animation.drawFrame(1, ctx, this.x, this.y, this.states.facingRight);
-
-        }
-
-        collided (other, direction) {
-            // collide with terrain
-            if (other instanceof Terrain) {
-
-                // Hero above terrain
-                // TODO store lastBottom, when landing, check to see if lastBottom is above other.BoundX. if it is, I SHOULD land. else i slide off like a chump. might work? idk yet
-                if (direction === 'bottom') {
-                    this.boundY = other.boundY - this.boundHeight;
-                    this.y = this.boundY - (this.spriteHeight*this.scale - this.boundHeight);
-                    this.yVelocity = 0;
-                    this.jumpsLeft = this.maxJumps;
-                    this.states.jumping = false;
-                }
-
-                // Hero jumps into terrain
-                else if (direction === 'top') {
-                    this.boundY = other.boundY + other.boundHeight;
-                    this.y = this.boundY - (this.spriteHeight*this.scale - this.boundHeight);
-                    this.lastBoundY = this.boundY;
-
-                }
-
-                // Hero collides with terrain to the left
-                else if (direction === 'left') {
-                    this.boundX = other.boundX + other.boundWidth;
-                    this.x = this.boundX - this.spriteWidth;
-                }
-
-                // Hero collides with terrain to the right
-                else if (direction === 'right') {
-                    this.boundX = other.boundX - this.boundWidth;
-                    this.x = this.boundX - this.spriteWidth;
-                }
-                //console.log(`${this.name} colliding with ${other.name} from ${direction}`);
-                //console.log(direction);
-        }
-
+            this.animation.drawFrame(1, ctx, this.x, this.y, this.states.facingRight);
         }
     }
 

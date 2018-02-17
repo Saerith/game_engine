@@ -21,7 +21,9 @@ define([
                 this.boundWidth = 0;
                 this.boundHeight = 0;
                 this.boundX = this.centerX - (this.boundWidth / 2);
-                this.boundY = this.y + (this.spriteHeight * this.scale - this.boundHeight);
+                this.boundY = this.y - this.boundHeight;
+
+                //Stats
 
                 this.states = {
                     "starting": true,

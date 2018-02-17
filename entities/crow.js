@@ -1,15 +1,15 @@
 define([
-    "actor",
+    "enemy",
     "animation",
     "terrain",
 ], function (
-    Actor,
+    Enemy,
     Animation,
     Terrain,
     ) {
 
 
-        class Crow extends Actor {
+        class Crow extends Enemy {
 
             constructor(game, x, y, img = null, ctx = null, scale = 3, spriteWidth = 50, spriteHeight = 40) {
                 super(game, x, y, img, ctx);
@@ -22,11 +22,14 @@ define([
                 this.spriteWidth = spriteWidth;
                 this.spriteHeight = spriteHeight;
 
-                this.centerX = x + ((spriteWidth * scale) / 2);
-                this.boundWidth = 0;
-                this.boundHeight = 0;
+                this.centerX = x + ((spriteWidth * scale) / 2) - spriteWidth;
+                this.boundWidth = this.scale*20;
+                this.boundHeight = this.scale*15;
                 this.boundX = this.centerX - (this.boundWidth / 2);
-                this.boundY = this.y + (this.spriteHeight * this.scale - this.boundHeight);
+                this.boundY = this.y - this.boundHeight;
+
+                //Stats
+                this.damage = 100;
 
 
                 this.states = {
@@ -47,6 +50,7 @@ define([
 
             update() {
                 if (this.states.flying) {
+                    //this.updateHitbox(50, 40, 20, 15);
                     if (this.animation.loops > 3) {
                         this.animation.elapsedTime = 0;
                         this.animation.loops = 0;
@@ -57,7 +61,9 @@ define([
                 }
                 if (this.states.attacking) {
                     this.y -= 1;
+                    this.boundY -= 1;
                     this.x -= 2;
+                    this.boundX -= 2;
                     if (this.animation.isDone()) {
                         this.animation.elapsedTime = 0;
                         this.states.attacking = false;
@@ -68,7 +74,9 @@ define([
                 }
                 if (this.states.attacking_final) {
                     this.y += 3;
+                    this.boundY += 3;
                     this.x += 5;
+                    this.boundX += 5;
                     if (this.animation.loops > 3) {
                         this.states.attacking_final = false;
                         this.animation.elapsedTime = 0;
@@ -84,6 +92,7 @@ define([
                         this.states.flying = true;
                         this.y = this.origy;
                         this.x = this.origx;
+                        this.updateHitbox(50, 40, 20, 15);
                     }
                 }
             }
@@ -104,6 +113,26 @@ define([
                 this.drawImg(ctx);
             }
 
+            updateHitbox(fWidth, fHeight, bWidth, bHeight) {
+                this.centerX = this.x + ((fWidth * this.scale) / 2) - fWidth;
+                this.boundWidth = this.scale * bWidth;
+                this.boundHeight = this.scale * bHeight;
+                this.boundX = this.centerX - this.boundWidth / 2;
+                this.boundY = this.y - this.boundHeight;
+            }
+
+            collided(other) {
+                // collide with terrain
+                if (other instanceof Terrain) {
+                    this.y = other.boundY - this.spriteHeight * this.scale;
+                    this.boundY = other.boundY - this.boundHeight;
+                    this.yVelocity = 0;
+                    this.jumpsLeft = this.maxJumps;
+                    this.states.jumping = false;
+                }
+
+            }
+
             drawOutline(ctx) {
                 ctx.beginPath();
                 ctx.strokeStyle = "green";
@@ -117,18 +146,6 @@ define([
             drawImg(ctx) {
                 this.drawOutline(ctx);
                 this.animation.drawFrame(1, ctx, this.x, this.y, this.states.facingRight);
-            }
-
-            collided(other) {
-                // collide with terrain
-                if (other instanceof Terrain) {
-                    this.y = other.boundY - this.spriteHeight * this.scale;
-                    this.boundY = other.boundY - this.boundHeight;
-                    this.yVelocity = 0;
-                    this.jumpsLeft = this.maxJumps;
-                    this.states.jumping = false;
-                }
-
             }
         }
 

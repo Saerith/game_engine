@@ -15,7 +15,6 @@ define([
             this.scale = scale;
             this.src_width = dimensions[0];
             this.src_height = dimensions[1];
-
             this.boundX = this.x;
             this.boundY = this.y+6;
             this.boundWidth = 96;

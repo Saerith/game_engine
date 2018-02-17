@@ -18,8 +18,8 @@ require.config({
         "camera": "entities/camera",
         "hud": "hud",
         "entity": "entities/entity",
-    	"terrain" : "entities/terrain",
-    	"level-one": "maps/level-one",
+    	  "terrain" : "entities/terrain",
+    	  "level-one": "maps/level-one",
         "hero": "entities/hero",
         "projectile": "entities/projectile",
         "projectile-sword": "entities/projectile-sword",
@@ -31,6 +31,7 @@ require.config({
         "dino": "entities/dino",
         "bullet": "entities/bullet",
         "shotblast": "entities/shotblast",
+        "enemy": "entities/enemy",
     },
 
 

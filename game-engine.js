@@ -145,8 +145,17 @@ define([
         draw (drawCallback) {
             this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
             this.ctx.save();
-            for (let i = 0; i < this.entities.length; i++) {
+            this.entities[0].draw(this.ctx);
+
+            for (let i = 1; i < this.entities.length; i++) {
+                //TODO magic numbers that don't consider the camera's coordinates at all
+                if(this.entities[i].x > this.entities[0].followed.x - 1000 
+                    && this.entities[i].x < this.entities[0].followed.x + 1000 
+                    && this.entities[i].y > this.entities[0].followed.y - 800
+                    && this.entities[i].y < this.entities[0].followed.y + 400)
+            
                 this.entities[i].draw(this.ctx);
+
             }
             if (drawCallback) {
                 drawCallback(this);

@@ -125,8 +125,8 @@ define([
         }
 
         update() {
-            this.dest_coords[0] = this.hero.x;
-            this.dest_coords[1] = this.hero.y;
+            this.dest_coords[0] = this.hero.x - 50;
+            this.dest_coords[1] = this.hero.y - 200;
 
         }
         isColliding() {}
